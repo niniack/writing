@@ -13,21 +13,37 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
+    
       - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
 
       - uses: r-lib/actions/setup-pandoc@v2
 
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
+          
+      - name: Restore R package cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: ubuntu-18.04-${{ steps.install-r.outputs.installed-r-version }}-1-${{ hashFiles('.github/r-depends.rds') }}
+          restore-keys: ubuntu-18.04-${{ steps.install-r.outputs.installed-r-version }}-1-
 
       - uses: r-lib/actions/setup-renv@v2
       
-      - name: Build site
-        run: Rscript -e 'rmarkdown::render_site()'
-        
-      - name: Commit results
+      - name: Processing my found files from output
         run: |
+          for filename in markdown/*.rmd; do
+            echo $filename
+            Rscript -e "rmarkdown::render('$filename')"
+          done
+          
+      - name: Commit report
+        run: |
+          git config --global user.name 'nishantaswani@nyu.edu'
+          git config --global user.email 'nishantaswani@nyu.edu'
           git add -A
           git commit -m 'Rebuild site' || echo "No changes to commit"
-          git push origin || echo "No changes to commit"
+          git push origin main || echo "No changes to commit"
