@@ -20,7 +20,7 @@ However, this assumption is not so great for the real-world. That's why there is
 
 *Using the dataset $\mathcal{D}$ to capture $p(x,y)$ is called **generative modeling** whereas using $\mathcal{D}$ to capture $p(y \mid x)$ is called **discriminative modeling***
 
-"Capturing" something refers to be able to describe that component: perhaps determining the mean of $p(y \mid x)$ or being able to generate new data points so that it looks like they were from the joint $p(x,y)$
+"Capturing" something refers to describing that component: perhaps determining the mean of $p(y \mid x)$ or being able to generate new data points so that it looks like they were from the joint $p(x,y)$
 
 We want to choose a family of distributions (or model), parametrized by some variable, that approximates the component we want to capture. An instance with a specific set of parameters is a hypothesis and all the possible instances with possible parameters is a hypothesis space. 
 
