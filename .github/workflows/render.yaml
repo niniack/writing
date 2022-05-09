@@ -20,13 +20,7 @@ jobs:
           github_token <- "${{ secrets.GITHUB_TOKEN }}"
           install.packages(c("distill", "postcards", "devtools",
           "fs", "htmltools", "here", "magick", "gh", "jsonlite"))
-          rmarkdown::render_site(encoding = "UTF-8")
-        shell: Rscript {0}
-        
-      - name: Copy redirects and gallery images
-        run: Rscript -e 'fs::file_copy("_redirects", "_site/_redirects"); fs::dir_copy("_gallery/img", "_site/_gallery/img")'
-      - name: Get CV
-        run: Rscript -e 'devtools::source_url("https://github.com/etiennebacher/personal_website_distill/blob/master/R/get_cv.R?raw=TRUE")'
+  
       - name: Commit results
         run: |
           git add -A
