@@ -13,7 +13,10 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
+    
       - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -37,8 +40,10 @@ jobs:
             Rscript -e "rmarkdown::render('$filename')"
           done
           
-      - name: Commit results
+      - name: Commit report
         run: |
+          git config --global user.name 'nishantaswani@nyu.edu'
+          git config --global user.email 'nishantaswani@nyu.edu'
           git add -A
           git commit -m 'Rebuild site' || echo "No changes to commit"
-          git push origin || echo "No changes to commit"
+          git push origin main || echo "No changes to commit"
