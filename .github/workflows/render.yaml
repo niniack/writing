@@ -23,11 +23,7 @@ jobs:
 
       - uses: r-lib/actions/setup-renv@v2
       
-      - name: Build site
-        run: Rscript -e 'rmarkdown::render_site()'
-        
-      - name: Commit results
+      - name: Finding files and store to output
+        id: finding-files
         run: |
-          git add -A
-          git commit -m 'Rebuild site' || echo "No changes to commit"
-          git push origin || echo "No changes to commit"
+          echo "::set-output name=FILELIST::$(find . -name '*.rmd' -print)"
