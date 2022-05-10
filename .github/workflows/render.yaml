@@ -2,10 +2,10 @@ name: Render Pages with Distill RMarkdown
 on: [push]
 env:
   IMAGE_NAME: distill-docker
-  TAG: ghcr.io/${{ github.repository }}/$IMAGE_NAME:latest
+  TAG: ghcr.io/niniack/writing/distill-docker:latest
 jobs:
   render:
-  
+
     runs-on: ubuntu-latest
 
     steps:  
