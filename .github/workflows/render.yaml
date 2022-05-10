@@ -14,9 +14,6 @@ jobs:
     steps:  
 
       - uses: actions/checkout@v2
-        
-      - name: Log into registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Pull image
         run: docker pull ghcr.io/niniack/distill-docker:latest
@@ -24,8 +21,6 @@ jobs:
       - name: Run docker image
         run: docker run -v ${PWD}:/github/workspace ghcr.io/niniack/distill-docker:latest
 
-      - name: Commit results
-        run: |
-          git add -A
-          git commit -m 'Rebuild site' || echo "No changes to commit"
-          git push origin || echo "No changes to commit"
+      - uses: EndBug/add-and-commit@v9
+        with:
+          default_author: github_actions
