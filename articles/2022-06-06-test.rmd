@@ -1,7 +1,0 @@
----
-title: "Test"
-description: "Dummy article"
-output: distill::distill_article
----
-
-## This is a test file
