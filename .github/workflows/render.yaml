@@ -16,10 +16,6 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
           
-      - uses: oleksiyrudenko/gha-git-credentials@v2-latest
-        with:
-          token: '${{ secrets.GITHUB_TOKEN }}'
-      
       - name: Pull image
         run: docker pull ghcr.io/niniack/distill-docker:latest
         
@@ -28,6 +24,8 @@ jobs:
         
       - name: Commit change
         run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'github-action@users.noreply.github.com'
           git add -A
           git commit -m "Render from docker"
           git push
