@@ -6,24 +6,23 @@ on:
 env:
   IMAGE_NAME: distill-docker
   TAG: ghcr.io/niniack/writing/distill-docker:latest
+  CI_COMMIT_MESSAGE: Continuous Integration Build Artifacts
+  CI_COMMIT_AUTHOR: Continuous Integration
 jobs:
   render:
     runs-on: ubuntu-latest
     steps:  
-      - uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}      
+      - uses: actions/checkout@v2 
+      
       - name: Pull image
         run: docker pull ghcr.io/niniack/distill-docker:latest
+        
       - name: Run docker image
         run: docker run -i -v ${{ github.workspace }}:/github/workspace ghcr.io/niniack/distill-docker:latest
-      - name: Configure git
+        
+      - name: GIT Commit Build Artifacts
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-      - name: Commit files
-        run: |
-          git add .
-          git commit -am "Update articles"
-      - name: Push files
-        run: git push
+          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
+          git config --global user.email "username@users.noreply.github.com"
+          git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
+          git push
