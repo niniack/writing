@@ -13,7 +13,7 @@ jobs:
 
     steps:  
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Pull image
         run: docker pull ghcr.io/niniack/distill-docker:latest
@@ -21,9 +21,14 @@ jobs:
       - name: Run docker image
         run: docker run -i -v ${{ github.workspace }}:/github/workspace ghcr.io/niniack/distill-docker:latest
 
-      - name: Commit report
+      - name: Configure git
         run: |
-          git config --global user.name 'Your Name'
-          git config --global user.email 'your-username@users.noreply.github.com'
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          
+      - name: Commit files
+          git add .
           git commit -am "Update articles"
+          
+      - name: Push files
           git push
