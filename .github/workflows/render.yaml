@@ -1,47 +1,20 @@
-on:
-  push:
-    branches: [main, master]
-  pull_request:
-    branches: [main, master]
-  workflow_dispatch:
+name: Render Pages with Distill RMarkdown
 
-name: distill deploy
+on:
+  workflow_dispatch:
+    branches:
+      - master
 
 jobs:
-  distill_deploy:
+  docker_publish:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
-    
       - uses: actions/checkout@v2
-
-      - uses: r-lib/actions/setup-pandoc@v2
-
-      - uses: r-lib/actions/setup-r@v2
-        with:
-          use-public-rspm: true
-          
-      - name: Restore R package cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.R_LIBS_USER }}
-          key: ubuntu-18.04-${{ steps.install-r.outputs.installed-r-version }}-1-${{ hashFiles('.github/r-depends.rds') }}
-          restore-keys: ubuntu-18.04-${{ steps.install-r.outputs.installed-r-version }}-1-
-
-      - uses: r-lib/actions/setup-renv@v2
       
-      - name: Processing my found files from output
-        run: |
-          for filename in markdown/*.rmd; do
-            echo $filename
-            Rscript -e "rmarkdown::render('$filename')"
-          done
-          
-      - name: Commit report
-        run: |
-          git config --global user.name 'nishantaswani@nyu.edu'
-          git config --global user.email 'nishantaswani@nyu.edu'
-          git add -A
-          git commit -m 'Rebuild site' || echo "No changes to commit"
-          git push origin main || echo "No changes to commit"
+      # https://github.com/marketplace/actions/push-to-ghcr
+      - name: Build and publish a Docker image for ${{ github.repository }}
+        uses: macbre/push-to-ghcr@master
+        with:
+          image_name: ${{ github.repository }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
