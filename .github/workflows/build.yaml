@@ -14,9 +14,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+            token: ${{ secrets.PAT }}
 
       - name: Build image
-        run: docker build . --tag $IMAGE_NAME
+        run: docker build ${{ github.workspace }} --tag $IMAGE_NAME
 
       - name: Log into registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
@@ -24,7 +26,7 @@ jobs:
       - name: Push image
         run: |
 
-          IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME
+          IMAGE_ID=ghcr.io/${{ github.username }}/$IMAGE_NAME
 
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
