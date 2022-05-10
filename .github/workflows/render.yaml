@@ -24,4 +24,4 @@ jobs:
           git add .
           git commit -am "Update articles"
       - name: Push files
-          git push
+        run: git push
