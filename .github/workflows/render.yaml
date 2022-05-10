@@ -8,27 +8,19 @@ env:
   TAG: ghcr.io/niniack/writing/distill-docker:latest
 jobs:
   render:
-
     runs-on: ubuntu-latest
-
     steps:  
-
       - uses: actions/checkout@v3
-
       - name: Pull image
         run: docker pull ghcr.io/niniack/distill-docker:latest
-
       - name: Run docker image
         run: docker run -i -v ${{ github.workspace }}:/github/workspace ghcr.io/niniack/distill-docker:latest
-
       - name: Configure git
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          
       - name: Commit files
           git add .
           git commit -am "Update articles"
-          
       - name: Push files
           git push
