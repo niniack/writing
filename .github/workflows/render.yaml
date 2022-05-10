@@ -30,6 +30,7 @@ jobs:
           git push origin || echo "No changes to commit"
 
   update-parent:
+    # must finish render
     needs: render
     runs-on: ubuntu-latest
     steps:
