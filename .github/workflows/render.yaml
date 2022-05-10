@@ -20,9 +20,7 @@ jobs:
       - name: Run docker image
         run: docker run -i -v ${{ github.workspace }}:/github/workspace ghcr.io/niniack/distill-docker:latest
         
-      - name: GIT Commit Build Artifacts
-        run: |
-          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-          git config --global user.email "username@users.noreply.github.com"
-          git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
-          git push
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "[Bot] Update all the things!"
+          commit_user_name: github-actions
