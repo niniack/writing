@@ -12,7 +12,9 @@ jobs:
   render:
     runs-on: ubuntu-latest
     steps:  
-      - uses: actions/checkout@v2 
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
       
       - name: Pull image
         run: docker pull ghcr.io/niniack/distill-docker:latest
@@ -20,7 +22,10 @@ jobs:
       - name: Run docker image
         run: docker run -i -v ${{ github.workspace }}:/github/workspace ghcr.io/niniack/distill-docker:latest
         
-      - uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "[Bot] Update all the things!"
-          commit_user_name: github-actions
+      - name: Commit change
+        run: |
+          git config --global user.name 'Your Name'
+          git config --global user.email 'your-username@users.noreply.github.com'
+          git add -A
+          git commit -m "Add test file"
+          git push
