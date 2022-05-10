@@ -9,7 +9,7 @@ env:
 jobs:
   render:
 
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:  
 
@@ -17,6 +17,9 @@ jobs:
       
       - name: Run docker image
         run: docker run hello-world
+        
+      - name: Log into registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Pull image
         run: docker pull ghcr.io/niniack/writing/distill-docker:latest
