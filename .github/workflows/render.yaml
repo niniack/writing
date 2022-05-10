@@ -14,6 +14,14 @@ jobs:
     steps:  
 
       - uses: actions/checkout@v2
+      
+      - name: step 1
+        ## Reference your environment variables
+        run: echo "The API key is:${{github.workspace}}"
+      
+      - name: step 1
+        ## Reference your environment variables
+        run: echo "The API key is:${{env.TAG}}" 
 
       - name: Run
         run: docker run -i -v ${{ github.workspace }}:/github/workspace ${{ env.TAG }}
