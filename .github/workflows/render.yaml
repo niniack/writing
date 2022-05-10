@@ -15,9 +15,9 @@ jobs:
 
       - uses: actions/checkout@v2
       
-      - name: Log into registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-      
+      - name: Run docker image
+        run: docker run hello-world
+
       - name: Pull image
         run: docker pull ghcr.io/niniack/writing/distill-docker:latest
 
