@@ -30,6 +30,7 @@ jobs:
           git push origin || echo "No changes to commit"
 
   update-parent:
+    needs: build_and_run
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
