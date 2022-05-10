@@ -21,14 +21,9 @@ jobs:
       - name: Run docker image
         run: docker run -i -v ${{ github.workspace }}:/github/workspace ghcr.io/niniack/distill-docker:latest
 
-      - name: Commit files
+      - name: Commit report
         run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git commit -m "Render" -a
-          
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+          git config --global user.name 'Your Name'
+          git config --global user.email 'your-username@users.noreply.github.com'
+          git commit -am "Update articles"
+          git push
