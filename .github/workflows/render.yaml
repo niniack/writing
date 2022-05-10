@@ -1,5 +1,8 @@
 name: Render Pages with Distill RMarkdown
-on: [push]
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
 env:
   IMAGE_NAME: distill-docker
   TAG: ghcr.io/niniack/writing/distill-docker:latest
