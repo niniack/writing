@@ -1,6 +1,10 @@
 name: Build Docker Image for Distill
 
 on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'Dockerfile'
   workflow_dispatch:
     branches:
       - master
