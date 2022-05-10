@@ -44,6 +44,6 @@ jobs:
 
           echo VERSION=$VERSION
 
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker tag $IMAGE_NAME ghcr.io/niniack/distill-docker:latest
           
-          docker push $IMAGE_ID:$VERSION
+          docker push ghcr.io/niniack/distill-docker:latest
