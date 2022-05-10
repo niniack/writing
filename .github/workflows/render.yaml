@@ -17,7 +17,7 @@ jobs:
 
       - name: Run docker image
 #         run: docker run -i -v ${{ github.workspace }}:/github/workspace ${{ env.TAG }}
-        run: docker run hello-world
+        run: docker run -v ${{ github.workspace }}:/github/workspace ghcr.io/niniack/writing/distill-docker:latest
 
       - name: Commit results
         run: |
