@@ -19,8 +19,16 @@ jobs:
         run: docker pull ghcr.io/niniack/distill-docker:latest
 
       - name: Run docker image
-        run: docker run -v ${PWD}:/github/workspace ghcr.io/niniack/distill-docker:latest
+        run: docker run -i -v ${{ github.workspace }}:/github/workspace ghcr.io/niniack/distill-docker:latest
 
-      - uses: EndBug/add-and-commit@v9
+      - name: Commit files
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -m "Render" -a
+          
+      - name: Push changes
+        uses: ad-m/github-push-action@master
         with:
-          default_author: github_actions
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
