@@ -1,4 +1,4 @@
-Every `.rmd` article must have the following frontmatter:
+Every `.rmd` article must have _at least_ the following frontmatter:
 ```yaml
 ---
 title: "A Bangin' Title"
