@@ -7,7 +7,7 @@ on:
       - articles/**
   workflow_dispatch:
 env:
-  TAG: ghcr.io/niniack/distill-docker:latest
+  TAG: ghcr.io/niniack/distill-docker:main
 jobs:
   render:
     runs-on: ubuntu-latest
