@@ -8,11 +8,17 @@ author:
     url: https://nishantaswani.com
     affiliation: New York University
     affiliation_url: https://www.nyuad.nyu.edu
-output: distill::distill_article
+output: 
+  distill::distill_article:
+    toc: true
+    toc_depth: 2
 layout: default
+tags: math
+style: fill
+color: secondary
 ---
 
-#### Testing out some Math Equations
+# Testing out some Math Equations
 
 $$
 \sigma = \sqrt{ \frac{1}{N} \sum_{i=1}^N (x_i -\mu)^2}
@@ -23,6 +29,25 @@ Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem
 <aside>
 This content will appear in the gutter of the article.
 </aside>
+
+# Test 2.1
+
+```{r}
+library(DiagrammeR)
+mermaid(diagram = '
+sequenceDiagram
+  participant Alice
+  participant Bob
+  Alice->>John: Hello John, how are you?
+  loop Healthcheck
+      John->>John: Fight against hypochondria
+  end
+  Note right of John: Rational thoughts<br/>prevail...
+  John-->>Alice: Great!
+  John->>Bob: How about you?
+  Bob-->>John: Jolly good!
+')
+```
 
 ## Acknowledgments {.appendix}
 
