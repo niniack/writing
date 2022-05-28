@@ -12,7 +12,7 @@ output: distill::distill_article
 layout: default
 ---
 
-#### Testing out Math
+#### Testing out some Math Equations
 
 $$
 \sigma = \sqrt{ \frac{1}{N} \sum_{i=1}^N (x_i -\mu)^2}
