@@ -8,8 +8,9 @@ RUN wget https://github.com/jgm/pandoc/releases/download/2.14.2/pandoc-2.14.2-1-
 
 RUN R -e "options(Ncpus = 2); \
     install.packages('devtools'); \
-    devtools::install_github('rstudio/distill@33f858a0e56cd083d55d8ff8df2ed7eecd27372a');"
-
+    devtools::install_github('rstudio/distill@33f858a0e56cd083d55d8ff8df2ed7eecd27372a'); \
+    devtools::install_github('rich-iannone/DiagrammeR')
+    "
 RUN mkdir -p /github/workspace
 WORKDIR /github/workspace
 
