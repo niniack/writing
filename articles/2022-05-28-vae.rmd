@@ -1,0 +1,514 @@
+---
+title: "From PCA to VAE"
+description: | 
+  Understanding what is needed to learn principal components analysis, autoencoders, variational autoencoders, 
+  and everything in between. Then, looking at how they are used in continual learning approaches
+bibliography: biblio.bib
+output: 
+  distill::distill_article:
+    toc: true
+    toc_depth: 3
+    code_folding: true
+layout: default
+tags: math
+style: fill
+color: secondary
+---
+
+# A Motivation
+
+A typical approach to continual learning is exemplar episodic replay, 
+where the system determines an exemplar selection of data from the input, which is
+then concatenated with future training inputs so that past patterns are not forgotten.
+
+However, as the number of tasks grows, it might become unrealistic to store 
+selections of past data due to storage limitations.
+
+[@shin2017continual] were able to demonstrate that generative rehearsal (GR) methods
+can perform on-par with exact rehearsal (ER) methods for task and class-incremental
+scenarios.
+
+```{r, fig.cap="Figure from [@shin2017continual]", layout="l-body", fig.align='center'}
+knitr::include_graphics("images/vae_graph.png")
+```
+The implication here is that if we can use a generative model instead of using
+a memory buffer to store exemplar data, we can save on storage and still produce
+models capable of continually learning.
+
+
+# What's at the Core?
+
+What lies at the core of the deep generative learning approach is a generative model
+capable of mimicking input data. While the [@shin2017continual] work uses generative
+adversarial networks (GANs), another common generative model is the variational autoencoder (VAE).
+
+The variational autoencoder moves a step beyond the typical autoencoder. But first, 
+let's take a look at the basic autoencoder and what it does.
+
+
+# Vanilla Autoencoders and PCA
+
+Autoencoders are a class of neural networks used to recreate the input at the output.
+Teaching a neural network to copy exactly its input would result in the learning 
+an identity function, which would be hardly useful.
+
+Rather, autoencoders are somehow restricted so that they can only approximately copy the input, as 
+well as only recreate inputs similar to their training data. In doing so, 
+autoencoders are capable of learning some meaningful properties, known as *latent features*, 
+of the input data [@GoodBengCour16].
+
+An autoencoder consists of
+
+* *An encoder*: the part of the network that compresses the high-dimensional input
+into a lower-dimensional representation.
+
+* *A decoder*: the part of the network that decompresses the low-dimensional representation
+back into the original dimensions.
+
+In essence, we are constraining a network to force it to learn a compressed representation. 
+
+### Mathematical Representation of Autoencoders
+
+If we represent the encoder as $f_\theta(\cdot)$ and the decoder as $g_\phi(\cdot)$, then the 
+autoencoder's reconstruction output $\mathbf{x'} = g_\phi(f_\theta(\mathbf{x}))$, with an input $\mathbf{x}$.
+
+Training an autoencoder involves reducing the error between the input $\mathbf{x}$ and the 
+reconstructed output $\mathbf{x'}$:
+
+$$
+L(\mathbf{x}, g_\phi(f_\theta(\mathbf{x})))
+$$
+
+A very simple loss function for the vanilla autoencoder is the mean-squared error 
+(which by the way is just a stripped, special case of cross-entropy loss). 
+
+$$
+L(\theta, \phi) = \frac{1}{n}\sum_{i}^{n}({\mathbf{x}}_i - g_\phi(f_\theta(\mathbf{x}_i)))^2
+$$
+
+### On Dimensionality Reduction
+
+The vanilla autoencoder can be used as a dimensionality reduction method that can
+outperform 'traditional' dimensionality reduction methods such as principal component
+analysis (PCA) or multi-dimensional scaling (MDS) for complex tasks [@fournier2019empirical].
+Or, in a special case, the autoencoder can be an inefficent way to mimic the PCA. 
+
+If the autoencoder has a single fully-connected hidden layer and uses a linear activation
+function, then it can be used to perform PCA.
+
+#### PCA Recap
+
+Let's say we have a matrix $\mathbf{Y} \in \mathbb{R}_{n\times N}$
+$$
+\mathbf{Y} = \begin{bmatrix}
+| &  & | \\
+\mathbf{y}_1 & ... & \mathbf{y}_N \\
+| &  & | \\
+\end{bmatrix}
+$$
+
+<aside>
+The element-wise average of this matrix is a $n$-dimensional 
+column vector:
+
+$\bar{\mathbf{y}} = \frac{1}{N}\sum_{i=1}^N\mathbf{y}_i$
+
+or
+
+$$
+\bar{\mathbf{y}} = 
+\frac{1}{N}
+\begin{bmatrix}
+| &  & | \\
+\mathbf{y}_1 & ... & \mathbf{y}_N \\
+| &  & | \\
+\end{bmatrix}
+\begin{bmatrix}
+| \\
+1 \\
+| \\
+\end{bmatrix}
+$$
+</aside>
+
+The mean-centered matrix is 
+$\mathbf{Y}_0 = \mathbf{Y} - \frac{1}{N}\mathbf{Y}\unicode{x1D7D9}_{N\times N}$
+$$
+\mathbf{Y}_0 = \begin{bmatrix}
+| &  & | \\
+\mathbf{y}_1 & ... & \mathbf{y}_N \\
+| &  & | \\
+\end{bmatrix} 
+-
+\frac{1}{N}
+\begin{bmatrix}
+| &  & | \\
+\mathbf{y}_1 & ... & \mathbf{y}_N \\
+| &  & | \\
+\end{bmatrix}
+\begin{bmatrix}
+| & & | \\
+1 & ... & 1 \\
+| & & | \\
+\end{bmatrix}
+$$
+
+PCA can be used as a dimensionality reduction method, where we first encode 
+the data with a function $f(\cdot)$, then to recover the original data, we can
+decode with another linear transformation $g(\cdot)$, 
+equivalent to our discussion above. 
+
+What's so PCA about this? PCA introduces
+a couple of assumptions or constraints that make it a unique solution.
+
+* The transformation is linear. 
+* The principal components are orthogonal.
+
+$$
+r(\mathbf{Y_0}) = g(f(\mathbf{Y}_0))
+$$
+
+In [@GoodBengCour16], it is shown that if we were to use $\mathbf{D} \in \mathbb{R}_{n\times l}$ as the
+decoding matrix in place of $g(\cdot)$, then the optimal encoding matrix is $\mathbf{D}^T$ (in place of $f(\cdot)$). This 
+blogger has an [even clearer derivation of it](https://jaketae.github.io/study/pca/#setup).
+
+The PCA reconstruction then looks like: 
+$$
+r(\mathbf{Y_0}) = \mathbf{D}\mathbf{D}^T\mathbf{Y}_0
+$$
+
+To learn the optimal matrix $\mathbf{D}$, we can minimize the $L^2$ distance between
+the input and the reconstruction 
+$$
+\operatorname*{arg\,min}_{D} \parallel \mathbf{Y}_0 - \mathbf{D}\mathbf{D}^T\mathbf{Y}_0 \parallel_F
+$$
+
+<aside>
+The frobenius norm is defined as: 
+$$
+\parallel\mathbf{A}\parallel_F = \sqrt{Tr(\mathbf{A}\mathbf{A}^T)}
+$$
+
+If we were to go on rewrite the problem with the definition, the squared 
+frobenius norm would take care of the square root.
+</aside>
+
+To make things 'nicer', we can switch to the squared euclidean norm. 
+$$
+\operatorname*{arg\,min}_{D} \parallel \mathbf{Y}_0 - \mathbf{D}\mathbf{D}^T\mathbf{Y}_0 \parallel_F^2
+$$
+
+The optimization above doesn't have a unique solution. What really makes the PCA
+is the assumption that $\mathbf{D}$ must have orthonormal vectors, leading
+to the formulation:
+$$
+\operatorname*{arg\,min}_{D} \parallel \mathbf{Y}_0 - \mathbf{D}\mathbf{D}^T\mathbf{Y}_0 \parallel_F^2 
+\qquad s.t. \quad \mathbf{D}^T\mathbf{D} = \mathbf{I}_{l\times l}
+$$
+
+According to [@shlens2014tutorial], the "true" reason we set this assumption is
+because "there exists an efficient, analytical solution to this problem." What that means
+is that the eigendecomposition and SVD methods, used to solve this problem,
+can exploit the orthonormality of the transformation matrix to provide a calculable solution.
+
+<aside>
+Why does orthonormality imply $\mathbf{D}^T\mathbf{D} = \mathbf{I}_{l\times l}$?
+
+Orthonormal = orthogonal unit vectors
+
+The dot product of two orthogonal vectors is 0. 
+
+The dot product of any **unit** vector with itself is 1.
+</aside>
+
+#### So, Autencoders
+
+Let's just show an autencoder already. 
+
+```{r layout="l-body",}
+library(magrittr)
+library(ruta)
+net <- 
+  dense(200, activation = "linear") + 
+  dense(50, "linear") + 
+  dense(200, activation = "linear")
+plot(net, fg = "#30707a", bg = "#e0e6ea")
+```
+The hidden layer can be described as
+$$
+\mathbf{x}_i = \mathbf{W}_1\mathbf{y}_i + \mathbf{b}_1\mathbf{u}^T
+$$
+
+And, the output layer as
+$$
+\mathbf{\bar{y}}_i =  \mathbf{W}_2\mathbf{x}_i + \mathbf{b}_2\mathbf{u}^T
+$$
+
+Setting up the loss function with the MSE loss, we get:
+$$
+J = \operatorname*{arg\,min}_{\mathbf{W}_1, \mathbf{W}_2, \mathbf{b}_1, \mathbf{b}_2} 
+\parallel 
+\mathbf{Y} - 
+\mathbf{W}_2(\mathbf{W}_1\mathbf{Y} + \mathbf{b}_1\mathbf{u}^T) - 
+\mathbf{b}_2\mathbf{u}^T 
+\parallel_F^2
+$$
+
+where $\mathbf{W}_1,\mathbf{W}_2 \in \mathbb{R}^{p\times n}$ are the weight matrices of the neural network, 
+$\mathbf{b}_1, \mathbf{b}_2 \in \mathbb{R}^{p\times 1}$ are the bias vectors, $\mathbf{u}^T$ is a $1\times n$ 
+vector of all ones, and $\mathbf{Y} \in \mathbb{R}^{n\times N}$ is the stack of all input vectors.
+
+<aside>
+$\mathbf{W}\times\mathbf{Y}$ is a $[p\times n][n \times N]$ operation resulting in $[p\times N]$
+
+$\mathbf{b}\times\mathbf{u}^T$ is a $[p\times 1][1 \times N]$ operation resulting in $[p\times N]$
+</aside>
+
+If we take the partial derivative of the loss function, with respect to $\mathbf{b}_2$
+
+$$
+\begin{align*}
+\frac{\partial J}{\partial \mathbf{b}_2}
+&=
+-2(
+  \mathbf{Y} - 
+  \mathbf{W}_2(\mathbf{W}_1\mathbf{Y} + \mathbf{b}_1\mathbf{u}^T) -
+  \mathbf{b}_2\mathbf{u}^T
+  )
+\mathbf{u}
+\\
+&=
+-2(
+  \mathbf{Y} - 
+  \mathbf{W}_2(\mathbf{W}_1\mathbf{Y} + \mathbf{b}_1\mathbf{u}^T)
+  )
+\mathbf{u} +
+2\mathbf{b}_2\mathbf{u}^T\mathbf{u}
+\\
+&=
+-2(
+  \mathbf{Y} - 
+  \mathbf{W}_2(\mathbf{W}_1\mathbf{Y} + \mathbf{b}_1\mathbf{u}^T)
+  )
+\mathbf{u} +
+2\mathbf{b}_2N
+\end{align*}
+$$
+
+
+<aside>
+$\mathbf{u}^T\mathbf{u}$ is a $[1\times N][N\times 1]$ operation 
+resulting in the scalar value $N$
+</aside>
+
+Setting the derivative equal to zero, to find the optimal bias vector: 
+
+$$
+\begin{align*}
+0
+&=
+-2(
+  \mathbf{Y} - 
+  \mathbf{W}_2(\mathbf{W}_1\mathbf{Y} + \mathbf{b}_1\mathbf{u}^T)
+  )
+\mathbf{u} +
+2\mathbf{b}_2N
+\\
+-2\mathbf{b}_2N
+&=
+-2(
+  \mathbf{Y} - 
+  \mathbf{W}_2(\mathbf{W}_1\mathbf{Y} + \mathbf{b}_1\mathbf{u}^T)
+  )
+\mathbf{u}
+\\
+\mathbf{b}_2
+&=
+\frac{1}{N}(
+  \mathbf{Y} - 
+  \mathbf{W}_2(\mathbf{W}_1\mathbf{Y} + \mathbf{b}_1\mathbf{u}^T)
+)\mathbf{u}
+\end{align*}
+$$
+
+Plugging this solution back into the original loss function: 
+$$
+J = \operatorname*{arg\,min}_{\mathbf{W}_1, \mathbf{W}_2, \mathbf{b}_1, \mathbf{b}_2} 
+\parallel 
+\mathbf{Y} - 
+\mathbf{W}_2(\mathbf{W}_1\mathbf{Y} + \mathbf{b}_1\mathbf{u}^T) - 
+\frac{1}{N}(
+  \mathbf{Y} - 
+  \mathbf{W}_2(\mathbf{W}_1\mathbf{Y} + \mathbf{b}_1\mathbf{u}^T)
+)\mathbf{u}\mathbf{u}^T 
+\parallel_F^2
+$$
+
+Rearranging to put the like terms together:
+$$
+\begin{align*}
+J 
+&= \operatorname*{arg\,min}_{\mathbf{W}_1, \mathbf{W}_2, \mathbf{b}_1, \mathbf{b}_2} 
+\parallel 
+(
+  \mathbf{Y} - 
+  \frac{1}{N}(\mathbf{Y})\mathbf{u}\mathbf{u}^T
+) +
+(
+  -\mathbf{W}_2\mathbf{W}_1\mathbf{Y} +
+  \frac{1}{N}(\mathbf{W}_2\mathbf{W}_1\mathbf{Y})\mathbf{u}\mathbf{u}^T
+) +
+(
+  -\mathbf{W}_2\mathbf{b}_1\mathbf{u}^T +
+  \frac{1}{N}(\mathbf{W}_2\mathbf{b}_1\mathbf{u}^T)\mathbf{u}\mathbf{u}^T
+)
+\parallel_F^2
+\\
+&= \operatorname*{arg\,min}_{\mathbf{W}_1, \mathbf{W}_2, \mathbf{b}_1, \mathbf{b}_2} 
+\parallel 
+(
+  \mathbf{Y} - 
+  \frac{1}{N}(\mathbf{Y})\mathbf{u}\mathbf{u}^T
+) +
+(
+  -\mathbf{W}_2\mathbf{W}_1\mathbf{Y} +
+  \frac{1}{N}(\mathbf{W}_2\mathbf{W}_1\mathbf{Y})\mathbf{u}\mathbf{u}^T
+) +
+(
+  -\mathbf{W}_2\mathbf{b}_1\mathbf{u}^T +
+  \frac{1}{N}(\mathbf{W}_2\mathbf{b}_1)N\mathbf{u}^T
+)
+\parallel_F^2
+\\
+&= \operatorname*{arg\,min}_{\mathbf{W}_1, \mathbf{W}_2, \mathbf{b}_1, \mathbf{b}_2} 
+\parallel 
+(
+  \mathbf{Y} - 
+  \frac{1}{N}(\mathbf{Y})\mathbf{u}\mathbf{u}^T
+) +
+(
+  -\mathbf{W}_2\mathbf{W}_1\mathbf{Y} +
+  \frac{1}{N}(\mathbf{W}_2\mathbf{W}_1\mathbf{Y})\mathbf{u}\mathbf{u}^T
+) +
+(
+  -\mathbf{W}_2\mathbf{b}_1\mathbf{u}^T +
+  \mathbf{W}_2\mathbf{b}_1\mathbf{u}^T
+)
+\parallel_F^2
+\\
+&= \operatorname*{arg\,min}_{\mathbf{W}_1, \mathbf{W}_2, \mathbf{b}_1, \mathbf{b}_2} 
+\parallel 
+(
+  \mathbf{Y} - 
+  \frac{1}{N}(\mathbf{Y})\mathbf{u}\mathbf{u}^T
+) +
+(
+  -\mathbf{W}_2\mathbf{W}_1\mathbf{Y} +
+  \frac{1}{N}(\mathbf{W}_2\mathbf{W}_1\mathbf{Y})\mathbf{u}\mathbf{u}^T
+)
+\parallel_F^2
+\\
+&= \operatorname*{arg\,min}_{\mathbf{W}_1, \mathbf{W}_2, \mathbf{b}_1, \mathbf{b}_2} 
+\parallel 
+(
+  \mathbf{Y} - 
+  \frac{1}{N}(\mathbf{Y})\mathbf{u}\mathbf{u}^T
+) +
+(
+  -\mathbf{W}_2\mathbf{W}_1\mathbf{Y} +
+  \mathbf{W}_2\mathbf{W}_1\frac{1}{N}(\mathbf{Y})\mathbf{u}\mathbf{u}^T
+)
+\parallel_F^2
+\\
+&= \operatorname*{arg\,min}_{\mathbf{W}_1, \mathbf{W}_2, \mathbf{b}_1, \mathbf{b}_2} 
+\parallel 
+(
+  \mathbf{Y} - 
+  \frac{1}{N}(\mathbf{Y})\mathbf{u}\mathbf{u}^T
+) +
+(
+  \mathbf{W}_2\mathbf{W}_1
+  (
+    -\mathbf{Y} +
+    \frac{1}{N}(\mathbf{Y})\mathbf{u}\mathbf{u}^T
+  )
+)
+\parallel_F^2
+\\
+&= \operatorname*{arg\,min}_{\mathbf{W}_1, \mathbf{W}_2, \mathbf{b}_1, \mathbf{b}_2} 
+\parallel 
+(
+  \mathbf{Y} - 
+  \frac{1}{N}(\mathbf{Y})\mathbf{u}\mathbf{u}^T
+) -
+(
+  \mathbf{W}_2\mathbf{W}_1
+  (
+    \mathbf{Y} -
+    \frac{1}{N}(\mathbf{Y})\mathbf{u}\mathbf{u}^T
+  )
+)
+\parallel_F^2
+\end{align*}
+$$
+
+Subtracting the term $\frac{1}{N}\mathbf{X}\mathbf{u}^T\mathbf{u}$ from the 
+original matrix $\mathbf{X}$ returns the mean-centered matrix, 
+so it can be represented as $\mathbf{X}_0$
+
+$$
+\begin{align*}
+J
+&= \operatorname*{arg\,min}_{\mathbf{W}_1, \mathbf{W}_2, \mathbf{b}_1, \mathbf{b}_2} 
+\parallel 
+\mathbf{Y}_0 -
+\mathbf{W}_2\mathbf{W}_1\mathbf{Y}_0
+\parallel_F^2
+\end{align*}
+$$
+
+The implication here is that with the optimal $\mathbf{b}_2$ bias vector, the
+problem is no longer dependent on the bias vector $\mathbf{b}_1$ in the hidden layer.
+The problem now also looks **a lot** like the PCA optimization problem.\
+
+While PCA uses eigendecomposition or SVD to solve for the weights, with the understanding
+that the vectors are orthonormal and both matrices are transposes, 
+backpropagation in the linear autoencoder learns the weights without those constraints. 
+Naturally, this implies that weights learned are not the same.
+
+However, [@plaut2018principal] has shown that left singular vectors of the output
+layer weights $\mathbf{W}_2$ are closely related to the matrix learned by PCA.
+
+<aside>
+When taking the SVD of $\mathbf{W}_2 = \mathbf{U\Sigma V}^T$, the left singular vectors
+are in the matrix $\mathbf{U}$ 
+</aside>
+
+```{r, fig.cap="Figure from [@plaut2018principal]", layout="l-body", fig.align='center'}
+knitr::include_graphics("images/comparison.png")
+```
+
+### They are Usually More Powerful
+
+In the autoencoder example above, we limited ourself to a single-layer 
+with a linear activation function. What really makes the autoencoder a powerful 
+tool is that it can learn more features with deeper networks with non-linear 
+activation functions. 
+
+
+Let's take a look: 
+
+
+## Corrections {.appendix}
+
+If you see mistakes or want to suggest changes, 
+please [create an issue](https://github.com/niniack/writing/issues) on the 
+source repository. Suggestions are appreciated!
+
+## Reuse {.appendix}
+
+Generated text and figures are licensed under Creative Commons Attribution CC BY 4.0. 
+The raw article and it's contents are available at 
+https://github.com/niniack/writing, unless otherwise noted. 
+The figures that have been reused from other sources don't fall under this 
+license and can be recognized by a note in their caption: "Figure from ...".
