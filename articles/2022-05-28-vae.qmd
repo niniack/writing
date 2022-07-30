@@ -3,14 +3,19 @@ title: "From PCA to VAE"
 description: | 
   Understanding what is needed to learn principal components analysis, autoencoders, variational autoencoders, 
   and everything in between. Then, looking at how they are used in continual learning approaches
-bibliography: biblio.bib
-output: 
-  distill::distill_article:
+format: 
+  html:
+    self-contained: true
     toc: true
-    toc_depth: 3
-    code_folding: true
+    toc-depth: 3
+    toc-location: left
+    code-fold: true
+    toc-title: Contents
+    html-math-method:
+      method: mathjax
+      url: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
 layout: default
-tags: math
+tags: [math]
 style: fill
 color: secondary
 ---
@@ -28,7 +33,7 @@ selections of past data due to storage limitations.
 can perform on-par with exact rehearsal (ER) methods for task and class-incremental
 scenarios.
 
-```{r, fig.cap="Figure from [@shin2017continual]", layout="l-body", fig.align='center'}
+```{r, fig.cap="Figure from [@shin2017continual]", fig.align='center'}
 knitr::include_graphics("images/vae_graph.png")
 ```
 The implication here is that if we can use a generative model instead of using
@@ -225,7 +230,7 @@ The dot product of any **unit** vector with itself is 1.
 
 Let's just show an autencoder already. 
 
-```{r layout="l-body",}
+```{r}
 library(magrittr)
 library(ruta)
 net <- 
@@ -484,7 +489,7 @@ When taking the SVD of $\mathbf{W}_2 = \mathbf{U\Sigma V}^T$, the left singular 
 are in the matrix $\mathbf{U}$ 
 </aside>
 
-```{r, fig.cap="Figure from [@plaut2018principal]", layout="l-body", fig.align='center'}
+```{r, fig.cap="Figure from [@plaut2018principal]", fig.align='center'}
 knitr::include_graphics("images/comparison.png")
 ```
 

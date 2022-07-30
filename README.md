@@ -1,4 +1,4 @@
-Every `.rmd` article must have _at least_ the following frontmatter:
+Every `.qmd` article must have _at least_ the following frontmatter:
 ```yaml
 ---
 title: "A Bangin' Title"
@@ -13,4 +13,8 @@ author:
 output: distill::distill_article
 layout: default
 ---
+```
+If adding tags, make sure they are wrapped in square brackets
+```yaml
+tags: [math, science]
 ```
