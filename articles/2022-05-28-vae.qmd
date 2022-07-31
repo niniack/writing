@@ -1,24 +1,18 @@
 ---
 title: "From PCA to VAE"
 description: | 
-  Understanding what is needed to learn principal components analysis, autoencoders, variational autoencoders, 
-  and everything in between. Then, looking at how they are used in continual learning approaches
-format: 
-  html:
-    self-contained: true
-    toc: true
-    toc-depth: 3
-    toc-location: left
-    code-fold: true
-    toc-title: Contents
-    html-math-method:
-      method: mathjax
-      url: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+  Understanding principal components analysis, autoencoders, variational autoencoders, 
+  from the lens of continual learning.
 layout: default
 tags: [math]
 style: fill
+date: 2022-08-31
 color: secondary
 ---
+
+```{r setup, include=FALSE}
+long_slug <- "2022-08-31-pca-to-vae"
+```
 
 # A Motivation
 
@@ -500,20 +494,10 @@ with a linear activation function. What really makes the autoencoder a powerful
 tool is that it can learn more features with deeper networks with non-linear 
 activation functions. 
 
+<!--------------- appendices go here ----------------->
 
-Let's take a look: 
 
-
-## Corrections {.appendix}
-
-If you see mistakes or want to suggest changes, 
-please [create an issue](https://github.com/niniack/writing/issues) on the 
-source repository. Suggestions are appreciated!
-
-## Reuse {.appendix}
-
-Generated text and figures are licensed under Creative Commons Attribution CC BY 4.0. 
-The raw article and it's contents are available at 
-https://github.com/niniack/writing, unless otherwise noted. 
-The figures that have been reused from other sources don't fall under this 
-license and can be recognized by a note in their caption: "Figure from ...".
+```{r, echo=FALSE}
+source("appendix.R")
+insert_appendix()
+```

@@ -10,7 +10,6 @@ author:
     url: https://example.com
     affiliation: The High Order
     affiliation_url: https://www.example.com
-output: distill::distill_article
 layout: default
 ---
 ```

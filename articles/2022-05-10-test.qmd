@@ -2,18 +2,6 @@
 title: "This is a test"
 description: | 
   Scientific and technical writing, native to the web
-format:
-  html:
-    self-contained: true
-    theme: united
-    toc: true
-    toc-location: left
-    toc-depth: 2
-    toc-title: Contents
-    code-fold: true
-    html-math-method:
-      method: mathjax
-      url: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
 layout: default
 ---
 

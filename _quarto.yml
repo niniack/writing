@@ -1,0 +1,24 @@
+format: 
+  html:
+    self-contained: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    code-fold: true
+    toc-title: Contents
+    html-math-method:
+      method: mathjax
+      url: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+
+author:
+  - name: Nishant Aswani
+    url: https://nishantaswani.com
+    affiliations:
+      - name: NYU Abu Dhabi
+        url: "https://nyuad.nyu.edu"
+      - name: NYU Tandon
+        url: "https://engineering.nyu.edu"
+
+bibliography: biblio.bib
+
+citation: true
